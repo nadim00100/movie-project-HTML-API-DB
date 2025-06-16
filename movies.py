@@ -1,15 +1,17 @@
 import random
 import statistics
 from datetime import datetime
-from movie_storage import get_movies, add_movie as storage_add_movie, delete_movie as storage_delete_movie, update_movie as storage_update_movie
+import movie_storage_sql as storage
+
 
 def press_enter():
-    """Pause the program until the user presses Enter."""
+    """Wait for the user to press Enter before continuing."""
     input("\nPress Enter to continue...")
 
+
 def movies_list():
-    """Print the list of movies in the database."""
-    movies = get_movies()
+    """Display all movies in the database with their year and rating."""
+    movies = storage.list_movies()
     if not movies:
         print("No movies in the database.")
     else:
@@ -17,9 +19,14 @@ def movies_list():
         for title, info in movies.items():
             print(f"{title} ({info['year']}): {info['rating']}")
 
+
 def add_movie():
-    """Add a new movie to the database after validating input."""
-    movies = get_movies()
+    """
+    Prompt the user to add a new movie to the database.
+
+    Validates that the name is unique, the year is valid, and the rating is between 0.0 and 10.0.
+    """
+    movies = storage.list_movies()
 
     while True:
         name = input("Enter new movie name: ").strip()
@@ -50,36 +57,43 @@ def add_movie():
         except ValueError:
             print("Invalid rating.")
 
-    storage_add_movie(name, year, rating)
-    print(f"Movie '{name}' successfully added.")
+    storage.add_movie(name, year, rating)
+
 
 def delete_movie():
-    """Delete a movie from the database by name."""
+    """
+    Prompt the user to delete a movie by name.
+
+    Searches for the movie by title (case-insensitive) and deletes it if found.
+    """
     name = input("Enter movie name to delete: ").strip()
     if not name:
         print("No empty input allowed.")
         return
 
-    movies = get_movies()
+    movies = storage.list_movies()
     for title in movies:
         if title.lower() == name.lower():
-            storage_delete_movie(title)
-            print(f"Movie '{title}' successfully deleted.")
+            storage.delete_movie(title)
             return
     print("Movie not found.")
 
+
 def update_movie():
-    """Update the rating of an existing movie."""
+    """
+    Prompt the user to update a movie's rating.
+
+    Validates the new rating before applying the update.
+    """
     name = input("Enter movie name to update: ").strip()
-    movies = get_movies()
+    movies = storage.list_movies()
     for title in movies:
         if title.lower() == name.lower():
             while True:
                 try:
                     rating = float(input("Enter new rating (0-10): "))
                     if 0 <= rating <= 10:
-                        storage_update_movie(title, rating)
-                        print(f"Movie '{title}' successfully updated.")
+                        storage.update_movie(title, rating)
                         return
                     print("Rating must be between 0.0 and 10.0.")
                 except ValueError:
@@ -87,9 +101,14 @@ def update_movie():
             return
     print("Movie not found.")
 
+
 def movie_stats():
-    """Display statistics about the movies in the database."""
-    movies = get_movies()
+    """
+    Display statistics for all movies in the database.
+
+    Shows average rating, median rating, best and worst rated movies.
+    """
+    movies = storage.list_movies()
     if not movies:
         print("No movies in the database.")
         return
@@ -105,18 +124,20 @@ def movie_stats():
     print(f"Best movie(s) ({max_rating}): {', '.join(best)}")
     print(f"Worst movie(s) ({min_rating}): {', '.join(worst)}")
 
+
 def random_movie():
-    """Pick and display a random movie from the database."""
-    movies = get_movies()
+    """Select and display a random movie from the database."""
+    movies = storage.list_movies()
     if not movies:
         print("No movies in the database.")
         return
     title, info = random.choice(list(movies.items()))
     print(f"\nYour movie for tonight: {title} ({info['year']}), rated {info['rating']}")
 
+
 def search_movie():
-    """Search for movies by name substring."""
-    movies = get_movies()
+    """Search and display movies that match a substring of the title."""
+    movies = storage.list_movies()
     query = input("Enter part of movie name: ").strip().lower()
     if not query:
         print("No empty input allowed.")
@@ -129,25 +150,32 @@ def search_movie():
     if not found:
         print("Movie not found.")
 
+
 def sort_movies_by_rating():
     """Sort and display movies by rating in descending order."""
-    movies = get_movies()
+    movies = storage.list_movies()
     sorted_movies = sorted(movies.items(), key=lambda x: x[1]['rating'], reverse=True)
     for title, info in sorted_movies:
         print(f"{title} ({info['year']}): {info['rating']}")
 
+
 def sort_movies_by_year():
-    """Sort and display movies by year, ascending or descending."""
-    movies = get_movies()
+    """Sort and display movies by year in ascending or descending order."""
+    movies = storage.list_movies()
     order = input("Do you want the latest movies first? (Y/N): ").strip().lower()
     reverse = order == 'y'
     sorted_movies = sorted(movies.items(), key=lambda x: x[1]['year'], reverse=reverse)
     for title, info in sorted_movies:
         print(f"{title} ({info['year']}): {info['rating']}")
 
+
 def filter_movies():
-    """Filter movies by minimum rating and/or year range."""
-    movies = get_movies()
+    """
+    Filter and display movies by minimum rating and/or year range.
+
+    Prompts the user for optional minimum rating, start year, and end year.
+    """
+    movies = storage.list_movies()
     while True:
         min_rating_input = input("Enter minimum rating (0-10, leave blank for no minimum): ").strip()
         if not min_rating_input:
@@ -173,7 +201,7 @@ def filter_movies():
                 if rating_value < float(min_rating_input):
                     return False
             except ValueError:
-                pass  # Ignore invalid input, treat as no filter
+                pass
         if start_year_input:
             try:
                 if year_value < int(start_year_input):
@@ -191,6 +219,7 @@ def filter_movies():
     for title, info in movies.items():
         if is_valid(info):
             print(f"{title} ({info['year']}): {info['rating']}")
+
 
 def main():
     """Main function to run the movie database CLI."""
@@ -235,6 +264,7 @@ def main():
             print("Invalid choice.")
 
         press_enter()
+
 
 if __name__ == "__main__":
     main()

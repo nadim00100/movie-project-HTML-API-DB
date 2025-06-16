@@ -1,5 +1,3 @@
-# git commit -m"create movie_storage_sql.py. 1.Set Up the SQLite Database with SQLAlchemy and set handle the database. 2.CRUD operations using raw SQL queries."
-
 from sqlalchemy import create_engine, text
 
 # Define the database URL
@@ -20,16 +18,31 @@ with engine.connect() as connection:
     """))
     connection.commit()
 
+
 def list_movies():
-    """Retrieve all movies from the database."""
+    """
+    Retrieve all movies from the database.
+
+    Returns:
+        dict: A dictionary where the keys are movie titles and values
+        are dictionaries containing 'year' and 'rating'.
+    """
     with engine.connect() as connection:
         result = connection.execute(text("SELECT title, year, rating FROM movies"))
         movies = result.fetchall()
 
     return {row[0]: {"year": row[1], "rating": row[2]} for row in movies}
 
+
 def add_movie(title, year, rating):
-    """Add a new movie to the database."""
+    """
+    Add a new movie to the database.
+
+    Args:
+        title (str): The title of the movie.
+        year (int): The release year of the movie.
+        rating (float): The rating of the movie.
+    """
     with engine.connect() as connection:
         try:
             connection.execute(
@@ -41,8 +54,14 @@ def add_movie(title, year, rating):
         except Exception as e:
             print(f"Error: {e}")
 
+
 def delete_movie(title):
-    """Delete a movie from the database."""
+    """
+    Delete a movie from the database by title.
+
+    Args:
+        title (str): The title of the movie to delete.
+    """
     with engine.connect() as connection:
         try:
             result = connection.execute(
@@ -57,8 +76,15 @@ def delete_movie(title):
         except Exception as e:
             print(f"Error: {e}")
 
+
 def update_movie(title, rating):
-    """Update a movie's rating in the database."""
+    """
+    Update the rating of a specific movie.
+
+    Args:
+        title (str): The title of the movie to update.
+        rating (float): The new rating value.
+    """
     with engine.connect() as connection:
         try:
             result = connection.execute(
