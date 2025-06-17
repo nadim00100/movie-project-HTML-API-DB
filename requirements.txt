@@ -1,0 +1,17 @@
+SQLAlchemy>=2.0
+requests>=2.31.0
+python-dotenv>=1.0.1
+
+
+
+Optional (but useful for formatting, linting, or development):
+You can include the following if you want to improve development experience:
+
+black>=24.3.0        # Code formatting
+flake8>=7.0.0        # Code linting
+
+
+How to generate this automatically:
+If you're using a virtual environment and want to include only the packages you're using, you can also generate it with:
+
+pip freeze > requirements.txt

@@ -5,7 +5,7 @@ import statistics
 import requests
 import os
 from dotenv import load_dotenv
-import movie_storage_sql as storage
+from storage import movie_storage_sql as storage
 
 # Load environment variables
 load_dotenv()
@@ -84,12 +84,7 @@ def delete_movie():
         return
 
     movies = storage.list_movies()
-    # Find title matching case-insensitive
-    matched_title = None
-    for title in movies:
-        if title.lower() == name.lower():
-            matched_title = title
-            break
+    matched_title = next((title for title in movies if title.lower() == name.lower()), None)
 
     if matched_title:
         try:
@@ -108,11 +103,7 @@ def update_movie():
         return
 
     movies = storage.list_movies()
-    matched_title = None
-    for title in movies:
-        if title.lower() == name.lower():
-            matched_title = title
-            break
+    matched_title = next((title for title in movies if title.lower() == name.lower()), None)
 
     if not matched_title:
         print("Movie not found.")
@@ -197,7 +188,6 @@ def filter_movies():
     """Filter movies by minimum rating and/or year range."""
     movies = storage.list_movies()
 
-    # Get validated minimum rating or None
     while True:
         min_rating_input = input("Enter minimum rating (0-10, leave blank for no minimum): ").strip()
         if not min_rating_input:
@@ -212,7 +202,6 @@ def filter_movies():
         except ValueError:
             print("Invalid rating. Please enter a number between 0 and 10.")
 
-    # Get start and end years or None
     def parse_year(s):
         try:
             return int(s)
@@ -247,7 +236,6 @@ def generate_website():
     template_path = os.path.join("static", "index_template.html")
     output_path = os.path.join("static", "index.html")
 
-    # Load template
     try:
         with open(template_path, "r", encoding="utf-8") as file:
             template = file.read()
@@ -255,10 +243,8 @@ def generate_website():
         print("❌ Template file not found.")
         return
 
-    # Set the page title
     page_title = "My Movie Collection"
 
-    # Create the movie grid HTML
     movies = storage.list_movies()
     grid_items = ""
     for title, info in movies.items():
@@ -273,70 +259,16 @@ def generate_website():
         """
 
     movie_grid = f"""
-    
     <ul class="movie-grid">
         {grid_items}
     </ul>
     """
 
-    # Replace placeholders in template
     output = template.replace("__TEMPLATE_TITLE__", page_title).replace("__TEMPLATE_MOVIE_GRID__", movie_grid)
 
-    # Save to output file
     try:
         with open(output_path, "w", encoding="utf-8") as file:
             file.write(output)
         print("Website was generated successfully.")
     except Exception as e:
         print(f"❌ Failed to generate website: {e}")
-
-
-def main():
-    """Main function to run the movie database CLI."""
-    options = {
-        '1': movies_list,
-        '2': add_movie,
-        '3': delete_movie,
-        '4': update_movie,
-        '5': movie_stats,
-        '6': random_movie,
-        '7': search_movie,
-        '8': sort_movies_by_rating,
-        '9': sort_movies_by_year,
-        '10': filter_movies,
-        '11': generate_website  # ← added here
-    }
-
-    print("\n********** My Movies Database **********")
-    while True:
-        print(""" Menu:
-        0. Exit
-        1. List movies
-        2. Add movie
-        3. Delete movie
-        4. Update movie
-        5. Stats
-        6. Random movie
-        7. Search movie
-        8. Movies sorted by rating
-        9. Movies sorted by year
-        10. Filter movies
-        11. Generate website
-        """)
-
-        choice = input("Enter choice (0-10): ").strip()
-
-        if choice == '0':
-            print("Bye! See you later.")
-            break
-
-        action = options.get(choice)
-        if action:
-            action()
-        else:
-            print("Invalid choice.")
-
-        press_enter()
-
-if __name__ == "__main__":
-    main()
