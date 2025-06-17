@@ -4,7 +4,6 @@ import random
 import statistics
 import requests
 import os
-from datetime import datetime
 from dotenv import load_dotenv
 import movie_storage_sql as storage
 
@@ -76,7 +75,6 @@ def add_movie():
             print(f"📷 Poster URL: {poster_url}")
     except Exception as e:
         print(f"❌ Failed to save movie to the database: {e}")
-
 
 def delete_movie():
     """Delete a movie from the database by name."""
@@ -244,6 +242,55 @@ def filter_movies():
     if not filtered:
         print("No movies match the filter criteria.")
 
+def generate_website():
+    """Generate a static HTML website from the template and movie data."""
+    template_path = os.path.join("static", "index_template.html")
+    output_path = os.path.join("static", "index.html")
+
+    # Load template
+    try:
+        with open(template_path, "r", encoding="utf-8") as file:
+            template = file.read()
+    except FileNotFoundError:
+        print("❌ Template file not found.")
+        return
+
+    # Set the page title
+    page_title = "My Movie Collection"
+
+    # Create the movie grid HTML
+    movies = storage.list_movies()
+    grid_items = ""
+    for title, info in movies.items():
+        grid_items += f"""
+        <li>
+            <div class="movie">
+                <img class="movie-poster" src="{info['poster_url']}" alt="{title} poster">
+                <div class="movie-title">{title}</div>
+                <div class="movie-year">{info['year']} | ⭐ {info['rating']}</div>
+            </div>
+        </li>
+        """
+
+    movie_grid = f"""
+    
+    <ul class="movie-grid">
+        {grid_items}
+    </ul>
+    """
+
+    # Replace placeholders in template
+    output = template.replace("__TEMPLATE_TITLE__", page_title).replace("__TEMPLATE_MOVIE_GRID__", movie_grid)
+
+    # Save to output file
+    try:
+        with open(output_path, "w", encoding="utf-8") as file:
+            file.write(output)
+        print("Website was generated successfully.")
+    except Exception as e:
+        print(f"❌ Failed to generate website: {e}")
+
+
 def main():
     """Main function to run the movie database CLI."""
     options = {
@@ -256,24 +303,27 @@ def main():
         '7': search_movie,
         '8': sort_movies_by_rating,
         '9': sort_movies_by_year,
-        '10': filter_movies
+        '10': filter_movies,
+        '11': generate_website  # ← added here
     }
 
     print("\n********** My Movies Database **********")
     while True:
         print(""" Menu:
-0. Exit
-1. List movies
-2. Add movie
-3. Delete movie
-4. Update movie
-5. Stats
-6. Random movie
-7. Search movie
-8. Movies sorted by rating
-9. Movies sorted by year
-10. Filter movies
-""")
+        0. Exit
+        1. List movies
+        2. Add movie
+        3. Delete movie
+        4. Update movie
+        5. Stats
+        6. Random movie
+        7. Search movie
+        8. Movies sorted by rating
+        9. Movies sorted by year
+        10. Filter movies
+        11. Generate website
+        """)
+
         choice = input("Enter choice (0-10): ").strip()
 
         if choice == '0':
