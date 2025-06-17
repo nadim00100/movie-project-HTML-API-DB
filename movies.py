@@ -1,4 +1,12 @@
-# movies.py
+"""
+movies.py
+
+Module for managing a movie database with functionalities to list,
+add, delete, update movies, display statistics, search, sort,
+filter movies, and generate a static website.
+
+Uses OMDb API to fetch movie data and stores data via the storage module.
+"""
 
 import random
 import statistics
@@ -13,9 +21,11 @@ load_dotenv()
 OMDB_API_KEY = os.getenv("OMDB_API_KEY")
 OMDB_URL = "http://www.omdbapi.com/"
 
+
 def press_enter():
     """Pause the program until the user presses Enter."""
     input("\nPress Enter to continue...")
+
 
 def movies_list():
     """Print the list of movies in the database."""
@@ -27,8 +37,14 @@ def movies_list():
         for title, info in movies.items():
             print(f"{title} ({info['year']}): {info['rating']}")
 
+
 def add_movie():
-    """Add a new movie by fetching from OMDb API."""
+    """
+    Add a new movie by fetching details from the OMDb API.
+
+    Prompts user for a movie title, fetches movie data from OMDb,
+    and saves it to the database if valid and not already present.
+    """
     title_input = input("Enter movie title: ").strip()
     if not title_input:
         print("Title must not be empty.")
@@ -76,6 +92,7 @@ def add_movie():
     except Exception as e:
         print(f"❌ Failed to save movie to the database: {e}")
 
+
 def delete_movie():
     """Delete a movie from the database by name."""
     name = input("Enter movie name to delete: ").strip()
@@ -94,6 +111,7 @@ def delete_movie():
             print(f"Failed to delete movie: {e}")
     else:
         print("Movie not found.")
+
 
 def update_movie():
     """Update the rating of an existing movie."""
@@ -126,6 +144,7 @@ def update_movie():
         except ValueError:
             print("Invalid rating.")
 
+
 def movie_stats():
     """Display statistics about the movies in the database."""
     movies = storage.list_movies()
@@ -144,6 +163,7 @@ def movie_stats():
     print(f"Best movie(s) ({max_rating}): {', '.join(best)}")
     print(f"Worst movie(s) ({min_rating}): {', '.join(worst)}")
 
+
 def random_movie():
     """Pick and display a random movie from the database."""
     movies = storage.list_movies()
@@ -152,6 +172,7 @@ def random_movie():
         return
     title, info = random.choice(list(movies.items()))
     print(f"\nYour movie for tonight: {title} ({info['year']}), rated {info['rating']}")
+
 
 def search_movie():
     """Search for movies by name substring."""
@@ -168,12 +189,14 @@ def search_movie():
     if not found:
         print("Movie not found.")
 
+
 def sort_movies_by_rating():
     """Sort and display movies by rating in descending order."""
     movies = storage.list_movies()
     sorted_movies = sorted(movies.items(), key=lambda x: x[1]['rating'], reverse=True)
     for title, info in sorted_movies:
         print(f"{title} ({info['year']}): {info['rating']}")
+
 
 def sort_movies_by_year():
     """Sort and display movies by year, ascending or descending."""
@@ -184,12 +207,15 @@ def sort_movies_by_year():
     for title, info in sorted_movies:
         print(f"{title} ({info['year']}): {info['rating']}")
 
+
 def filter_movies():
     """Filter movies by minimum rating and/or year range."""
     movies = storage.list_movies()
 
     while True:
-        min_rating_input = input("Enter minimum rating (0-10, leave blank for no minimum): ").strip()
+        min_rating_input = input(
+            "Enter minimum rating (0-10, leave blank for no minimum): "
+        ).strip()
         if not min_rating_input:
             min_rating = None
             break
@@ -203,6 +229,7 @@ def filter_movies():
             print("Invalid rating. Please enter a number between 0 and 10.")
 
     def parse_year(s):
+        """Parse a year from string, return None if invalid."""
         try:
             return int(s)
         except ValueError:
@@ -215,6 +242,15 @@ def filter_movies():
     end_year = parse_year(end_year_input) if end_year_input else None
 
     def is_valid(info):
+        """
+        Check if a movie matches the filter criteria.
+
+        Args:
+            info (dict): Movie info containing 'rating' and 'year'.
+
+        Returns:
+            bool: True if movie matches criteria, False otherwise.
+        """
         if min_rating is not None and info['rating'] < min_rating:
             return False
         if start_year is not None and info['year'] < start_year:
@@ -230,6 +266,7 @@ def filter_movies():
             filtered = True
     if not filtered:
         print("No movies match the filter criteria.")
+
 
 def generate_website():
     """Generate a static HTML website from the template and movie data."""
@@ -264,7 +301,9 @@ def generate_website():
     </ul>
     """
 
-    output = template.replace("__TEMPLATE_TITLE__", page_title).replace("__TEMPLATE_MOVIE_GRID__", movie_grid)
+    output = template.replace("__TEMPLATE_TITLE__", page_title).replace(
+        "__TEMPLATE_MOVIE_GRID__", movie_grid
+    )
 
     try:
         with open(output_path, "w", encoding="utf-8") as file:

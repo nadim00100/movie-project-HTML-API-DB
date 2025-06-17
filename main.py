@@ -2,8 +2,14 @@
 
 import movies as m
 
+
 def main():
-    """Main function to run the movie database CLI."""
+    """
+    Main function to run the movie database CLI.
+
+    Displays a menu with options for managing the movie database,
+    then processes user input to invoke the corresponding functions.
+    """
     options = {
         '1': m.movies_list,
         '2': m.add_movie,
@@ -20,7 +26,8 @@ def main():
 
     print("\n********** My Movies Database **********")
     while True:
-        print(""" Menu:
+        print(
+            """ Menu:
         0. Exit
         1. List movies
         2. Add movie
@@ -33,7 +40,8 @@ def main():
         9. Movies sorted by year
         10. Filter movies
         11. Generate website
-        """)
+        """
+        )
 
         choice = input("Enter choice (0-11): ").strip()
 
@@ -48,6 +56,7 @@ def main():
             print("Invalid choice.")
 
         m.press_enter()
+
 
 if __name__ == "__main__":
     main()
